@@ -1,7 +1,3 @@
-#import splitfolders
-#splitfolders.ratio('./dataset', output="./split-dataset", seed=1337, ratio=(.8, .2), group_prefix=None)
-
-
 TRAIN_PATH = '../datasets/split-dataset/train'
 VAL_PATH = '../datasets/split-dataset/val'
 
@@ -15,31 +11,25 @@ from keras.preprocessing import image
 from keras import losses
 from keras.models import Sequential
 
-
-
-
 model = Sequential()
-model.add(Conv2D(32,kernel_size=(3,3),activation='relu',input_shape=(224,224,3)))
-model.add(Conv2D(64,(3,3),activation=('relu')))
+model.add(Conv2D(16, (3,3), activation='relu', input_shape=(224, 224, 3)))
 model.add(MaxPooling2D(pool_size=(2,2)))
-model.add(Dropout(0.25))
-
-model.add(Conv2D(64,(3,3),activation=('relu')))
+model.add(Conv2D(32, (3,3), activation='relu'))
 model.add(MaxPooling2D(pool_size=(2,2)))
-model.add(Dropout(0.25))
-
-
-model.add(Conv2D(128,(3,3),activation=('relu')))
+model.add(Conv2D(64, (3,3), activation='relu'))
 model.add(MaxPooling2D(pool_size=(2,2)))
-model.add(Dropout(0.25))
-
+model.add(Conv2D(64, (3,3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2,2)))
+model.add(Conv2D(64, (3,3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2,2)))
 model.add(Flatten())
-model.add(Dense(64,activation='relu'))
-model.add(Dropout(0.5))
+model.add(Dense(512,activation='relu'))
 model.add(Dense(1,activation='sigmoid'))
 
-model.compile(loss=losses.binary_crossentropy,optimizer='adam',metrics=['accuracy'])
 
+print(model.summary())
+
+model.compile(loss=losses.binary_crossentropy,optimizer='adam',metrics=['accuracy']) #RMSprop(lr=0.001)
 
 train_datagen = image.ImageDataGenerator(
     rescale = 1./255,
@@ -62,13 +52,17 @@ validation_generator = test_dataset.flow_from_directory(VAL_PATH,
 
 hist = model.fit_generator(train_generator,
                            steps_per_epoch=8,
-                           epochs = 10,
+                           epochs = 15,
+                           verbose=1,
                            validation_data = validation_generator,
-                           validation_steps=2
+                           validation_steps=8
 )
 
-print(model.evaluate_generator(train_generator))
+model.save('../trained_model/radar-classifier_2.model')
 
-print(model.evaluate_generator(validation_generator))
 
-model.save('radar-classifier.model')
+#print(model.evaluate_generator(train_generator))
+
+#print(model.evaluate_generator(validation_generator))
+
+#model.save('radar-classifier.model')
